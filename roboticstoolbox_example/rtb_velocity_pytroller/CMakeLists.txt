@@ -23,15 +23,35 @@ endforeach()
 find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 
-file (REMOVE ${CMAKE_CURRENT_SOURCE_DIR}/src/rtb_velocity_pytroller_logic.cpp)
-file (REMOVE ${CMAKE_CURRENT_SOURCE_DIR}/src/rtb_velocity_pytroller_logic.h)
+# Set the parameter header file name
+set(PARAM_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/rtb_velocity_pytroller_parameters/include)
+set(PARAM_HEADER_FILE ${PARAM_INCLUDE_DIR}/rtb_velocity_pytroller_parameters.hpp)
+
+# Make logic build directory
+set(LOGIC_DIR ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/rtb_velocity_pytroller_logic)
+set(LOGIC_INCLUDE_DIR ${LOGIC_DIR}/include/rtb_velocity_pytroller)
+file(MAKE_DIRECTORY ${LOGIC_DIR})
+file(MAKE_DIRECTORY ${LOGIC_INCLUDE_DIR})
+
+file (REMOVE ${LOGIC_DIR}/rtb_velocity_pytroller_logic.cpp)
+file (REMOVE ${LOGIC_DIR}/rtb_velocity_pytroller_logic.h)
+file (REMOVE ${LOGIC_INCLUDE_DIR}/rtb_velocity_pytroller_logic.h)
 
 add_custom_command(
-  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/rtb_velocity_pytroller_logic.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/rtb_velocity_pytroller_logic.h
-  COMMAND cython -3 -+ ${CMAKE_CURRENT_SOURCE_DIR}/src/rtb_velocity_pytroller_logic.pyx
+  OUTPUT ${LOGIC_DIR}/rtb_velocity_pytroller_logic.cpp ${LOGIC_DIR}/rtb_velocity_pytroller_logic.h
+  COMMAND cython3 -3 --cplus ${CMAKE_CURRENT_SOURCE_DIR}/src/rtb_velocity_pytroller_logic.pyx
+    -o ${LOGIC_DIR}/rtb_velocity_pytroller_logic.cpp -I ${PARAM_INCLUDE_DIR}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src
   DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/rtb_velocity_pytroller_logic.pyx
+)
+
+# Copy the header file into the include directory
+add_custom_command(
+  OUTPUT ${LOGIC_INCLUDE_DIR}/rtb_velocity_pytroller_logic.h
+  COMMAND ${CMAKE_COMMAND} -E copy
+    ${LOGIC_DIR}/rtb_velocity_pytroller_logic.h ${LOGIC_INCLUDE_DIR}/rtb_velocity_pytroller_logic.h
+  DEPENDS ${LOGIC_DIR}/rtb_velocity_pytroller_logic.h
 )
 
 generate_parameter_library(
@@ -39,28 +59,28 @@ generate_parameter_library(
   src/rtb_velocity_pytroller_parameters.yaml
 )
 
-# Set the output parameter header file name
-set(LIB_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/rtb_velocity_pytroller_parameters/include)
-set(PARAM_HEADER_FILE ${LIB_INCLUDE_DIR}/rtb_velocity_pytroller_parameters.hpp)
-
-file (REMOVE ${CMAKE_CURRENT_SOURCE_DIR}/src/rtb_velocity_pytroller_parameters.pxd)
+file (REMOVE ${PARAM_INCLUDE_DIR}/rtb_velocity_pytroller_parameters.pxd)
 
 # Generate the pxd for the library
 add_custom_command(
-  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/rtb_velocity_pytroller_parameters.pxd
-  COMMAND ros2 run pytroller_tools generate_pxd ${CMAKE_CURRENT_SOURCE_DIR}/src/rtb_velocity_pytroller_parameters.pxd ${PARAM_HEADER_FILE}
+  OUTPUT ${PARAM_INCLUDE_DIR}/rtb_velocity_pytroller_parameters.pxd
+  COMMAND ros2 run pytroller_tools generate_pxd ${PARAM_INCLUDE_DIR}/rtb_velocity_pytroller_parameters.pxd ${PARAM_HEADER_FILE}
   DEPENDS ${PARAM_HEADER_FILE}
 )
 
 add_library(rtb_velocity_pytroller SHARED
   src/rtb_velocity_pytroller.cpp
-  src/rtb_velocity_pytroller_logic.cpp
-  src/rtb_velocity_pytroller_logic.h
-  src/rtb_velocity_pytroller_parameters.pxd
+  ${LOGIC_DIR}/rtb_velocity_pytroller_logic.cpp
+  ${LOGIC_INCLUDE_DIR}/rtb_velocity_pytroller_logic.h
+  ${PARAM_INCLUDE_DIR}/rtb_velocity_pytroller_parameters.pxd
 )
 target_compile_features(rtb_velocity_pytroller PUBLIC cxx_std_17)
 target_include_directories(rtb_velocity_pytroller PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include/rtb_velocity_pytroller>
+)
+target_include_directories(rtb_velocity_pytroller PUBLIC
+  $<BUILD_INTERFACE:${LOGIC_DIR}/include>
   $<INSTALL_INTERFACE:include/rtb_velocity_pytroller>
 )
 target_link_libraries(rtb_velocity_pytroller PUBLIC
@@ -116,6 +136,10 @@ if(BUILD_TESTING)
 
 endif()
 
+install(
+  DIRECTORY ${LOGIC_DIR}/include
+  DESTINATION include/rtb_velocity_pytroller
+)
 install(
   DIRECTORY include/
   DESTINATION include/rtb_velocity_pytroller

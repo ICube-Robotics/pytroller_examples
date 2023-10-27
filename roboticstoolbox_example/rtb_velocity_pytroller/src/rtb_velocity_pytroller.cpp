@@ -14,6 +14,8 @@
 //
 // author: Maciej Bednarczyk
 
+#include <dlfcn.h>
+
 #include "rtb_velocity_pytroller/rtb_velocity_pytroller.hpp"
 
 #include <algorithm>
@@ -29,7 +31,7 @@
 #include "rclcpp/qos.hpp"
 
 #include <Python.h>
-#include "rtb_velocity_pytroller_logic.h"
+#include "rtb_velocity_pytroller/rtb_velocity_pytroller_logic.h"
 
 namespace rtb_velocity_pytroller
 {
@@ -38,6 +40,10 @@ RtbVelocityPytroller::RtbVelocityPytroller()
   rt_command_ptr_(nullptr),
   command_subscriber_(nullptr)
 {
+  // Workaround to fix undeclared symbols in cpython
+  // https://stackoverflow.com/questions/49784583/numpy-import-fails-on-multiarray-extension-library-when-called-from-embedded-pyt
+  // TODO : remove ASAP
+  dlopen("libpython3.10.so", RTLD_LAZY | RTLD_GLOBAL);
 }
 
 controller_interface::CallbackReturn RtbVelocityPytroller::on_init()

@@ -35,7 +35,7 @@ cdef public int rtb_velocity_pytroller_logic(unordered_map[string, double] state
     messagetype = getattr(importlib.import_module('.'.join(mt[:2])), mt[-1])
     command_message = deserialize_message(bytes(msg), type(messagetype()))
 
-    commands = pytroller_logic_impl(states, commands, command_message, param)
+    (&commands)[0] = pytroller_logic_impl(states, commands, command_message, param)
   except Exception as error:
     print("An exception occurred:", error)
     return -1

@@ -17,8 +17,6 @@ rtb_velocity_pytroller:
       - wrist_1_joint
       - wrist_2_joint
       - wrist_3_joint
-    interface_name: velocity
+    interface_name: position
     command_topic_name: ~/commands
-    # command_topic_type: geometry_msgs/msg/Twist
-
-    
+    command_topic_type: geometry_msgs/msg/Twist

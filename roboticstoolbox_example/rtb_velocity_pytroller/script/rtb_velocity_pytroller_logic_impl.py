@@ -11,10 +11,48 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# author: Maciej Bednarczyk
 
-import scipy
+# import os
+# import math
+# import yaml
+import numpy as np
+
+import roboticstoolbox as rtb
+
 
 def pytroller_logic_impl(states, commands, msg, params):
-  # import roboticstoolbox as rtb
-  # import numpy as np
-  return commands
+
+    robot = rtb.models.UR5()
+
+    robot.q = np.array([
+      states[b'shoulder_pan_joint/position'],
+      states[b'shoulder_lift_joint/position'],
+      states[b'elbow_joint/position'],
+      states[b'wrist_1_joint/position'],
+      states[b'wrist_2_joint/position'],
+      states[b'wrist_3_joint/position'],
+    ])
+
+    v = np.array([
+      msg.linear.x,
+      msg.linear.y,
+      msg.linear.z,
+      msg.angular.x,
+      msg.angular.y,
+      msg.angular.z,
+    ])
+
+    robot.qd = np.linalg.pinv(robot.jacobe(robot.q)) @ v
+
+    commands[b'shoulder_pan_joint/position'] = robot.q[0] + robot.qd[0] * 0.005
+    commands[b'shoulder_lift_joint/position'] = robot.q[1] + robot.qd[1] * 0.005
+    commands[b'elbow_joint/position'] = robot.q[2] + robot.qd[2] * 0.005
+    commands[b'wrist_1_joint/position'] = robot.q[3] + robot.qd[3] * 0.005
+    commands[b'wrist_2_joint/position'] = robot.q[4] + robot.qd[4] * 0.005
+    commands[b'wrist_3_joint/position'] = robot.q[5] + robot.qd[5] * 0.005
+
+    # print(commands)
+
+    return commands

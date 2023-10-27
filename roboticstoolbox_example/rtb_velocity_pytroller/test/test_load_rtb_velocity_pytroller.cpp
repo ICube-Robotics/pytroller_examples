@@ -24,7 +24,9 @@ TEST(TestLoadRtbVelocityPytroller, load_plugin)
 {
   pluginlib::ClassLoader<controller_interface::ControllerInterface> plugin_loader{
     "controller_interface", "controller_interface::ControllerInterface"};
-  ASSERT_NO_THROW(plugin_loader.createSharedInstance("rtb_velocity_pytroller/RtbVelocityPytroller"));
+  ASSERT_NO_THROW(
+    plugin_loader.createSharedInstance("rtb_velocity_pytroller/RtbVelocityPytroller")
+  );
 }
 
 TEST(TestLoadRtbVelocityPytroller, load_controller)
