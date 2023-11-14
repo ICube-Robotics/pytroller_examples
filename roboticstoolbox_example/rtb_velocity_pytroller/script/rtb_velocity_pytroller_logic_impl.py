@@ -22,8 +22,8 @@ import numpy as np
 import roboticstoolbox as rtb
 
 
-def pytroller_logic_impl(states, commands, msg, params):
-
+def pytroller_logic_impl(period, states, commands, msg, params):
+    
     robot = rtb.models.UR5()
 
     robot.q = np.array([
@@ -46,13 +46,11 @@ def pytroller_logic_impl(states, commands, msg, params):
 
     robot.qd = np.linalg.pinv(robot.jacobe(robot.q)) @ v
 
-    commands[b'shoulder_pan_joint/position'] = robot.q[0] + robot.qd[0] * 0.005
-    commands[b'shoulder_lift_joint/position'] = robot.q[1] + robot.qd[1] * 0.005
-    commands[b'elbow_joint/position'] = robot.q[2] + robot.qd[2] * 0.005
-    commands[b'wrist_1_joint/position'] = robot.q[3] + robot.qd[3] * 0.005
-    commands[b'wrist_2_joint/position'] = robot.q[4] + robot.qd[4] * 0.005
-    commands[b'wrist_3_joint/position'] = robot.q[5] + robot.qd[5] * 0.005
-
-    # print(commands)
+    commands[b'shoulder_pan_joint/position'] = robot.q[0] + robot.qd[0] * period
+    commands[b'shoulder_lift_joint/position'] = robot.q[1] + robot.qd[1] * period
+    commands[b'elbow_joint/position'] = robot.q[2] + robot.qd[2] * period
+    commands[b'wrist_1_joint/position'] = robot.q[3] + robot.qd[3] * period
+    commands[b'wrist_2_joint/position'] = robot.q[4] + robot.qd[4] * period
+    commands[b'wrist_3_joint/position'] = robot.q[5] + robot.qd[5] * period
 
     return commands

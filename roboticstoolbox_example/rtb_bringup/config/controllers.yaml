@@ -10,13 +10,12 @@ controller_manager:
 
 rtb_velocity_pytroller:
   ros__parameters:
-    joints:
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    interface_name: position
+    interface_full_names:
+      - shoulder_pan_joint/position
+      - shoulder_lift_joint/position
+      - elbow_joint/position
+      - wrist_1_joint/position
+      - wrist_2_joint/position
+      - wrist_3_joint/position
     command_topic_name: ~/commands
     command_topic_type: geometry_msgs/msg/Twist

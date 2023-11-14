@@ -44,6 +44,7 @@ add_custom_command(
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src
   DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/rtb_velocity_pytroller_logic.pyx
+    ${CMAKE_CURRENT_SOURCE_DIR}/script/rtb_velocity_pytroller_logic_impl.py
 )
 
 # Copy the header file into the include directory
